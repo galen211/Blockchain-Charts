@@ -1,0 +1,50 @@
+---
+title: "Funding By Industry Segment"
+output: html_notebook
+---
+
+```{r}
+library(ggplot2)
+library(treemapify)
+library(paletteer)
+library(ggthemes)
+library(readxl)
+library(janitor)
+library(tidyverse)
+library(scales)
+library(sysfonts)
+```
+
+```{r}
+funding_data <- read_excel("../data/funding_data.xlsx") %>% 
+  clean_names() %>%
+  rename(
+    group = category,
+    value = funding_amount
+  ) %>%
+  mutate(label = map2_chr(group, value, ~str_c(.x, dollar(.y, accuracy = .1), sep = ": ")))
+  
+```
+
+```{r}
+font_add_google(name = "Open Sans")
+```
+
+
+```{r}
+plt <- ggplot(funding_data, aes(area = value, fill = value, label = label)) +
+  geom_treemap() +
+  geom_treemap_text(colour = "white", place = "topleft", reflow = T) +
+  scale_fill_paletteer_c("ggthemes::Green") +
+  theme_minimal() +
+  theme(text = element_text(family = "Open Sans"),
+        legend.position="none")
+
+plt
+```
+
+
+```{r}
+ggsave("../figs/funding.svg", width = 1920, height = 1080, units = c("px"))
+```
+
